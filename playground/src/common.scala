@@ -5,5 +5,5 @@ import chisel3.experimental.BundleLiterals._
 
 import scala.language.implicitConversions
 
-package object hls {
+object hls {
 }
