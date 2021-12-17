@@ -32,9 +32,10 @@ object TestSqrt extends ChiselUtestTester {
           for (i <- 0 until 10) {
             val number = scala.util.Random.nextInt(256)
             val sqrt_number = math.sqrt(number).toInt
-//            println(number, math.sqrt(number).toInt)
+            //            println(number, math.sqrt(number).toInt)
             dut.operand.poke(number.U)
             dut.result.expect(((1 << sqrt_number) - 1).U)
+            dut.clock.step()
           }
         } join()
       }
