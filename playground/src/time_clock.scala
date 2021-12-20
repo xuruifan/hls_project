@@ -5,7 +5,7 @@ class time_clock extends MultiIOModule {
     // Input
     val hour = IO(Input(UInt(5.W)))
     val minute = IO(Input(UInt(6.W)))
-    val time_update = IO(Bool())
+    val time_update = IO(Input(Bool()))
 
     //Register
     val hour_now = RegInit(hour)
@@ -44,6 +44,8 @@ class time_clock extends MultiIOModule {
     when(colon_cnt === 9999.U) {
         colon_cnt := 0.U
         colon_now := -colon_now
+    } otherwise {
+        colon_cnt := colon_cnt + 1.U
     }
 
     hour_out := hour_now
