@@ -14,7 +14,7 @@ class filter_behavior extends MultiIOModule {
   }
 
   val mul = Reg(Vec(7, UInt(16.W)))
-  val add0 = Reg(Vec(3, UInt(16.W)))
+  val add0 = Reg(Vec(4, UInt(16.W)))
   val add1 = Reg(Vec(2, UInt(16.W)))
   val add2 = Reg(Vec(1, UInt(16.W)))
 
@@ -24,8 +24,9 @@ class filter_behavior extends MultiIOModule {
   for (i <- 0 until 3) {
     add0(i) := mul(2 * i) + mul(2 * i + 1)
   }
+  add0(3) := mul(6)
   add1(0) := add0(0) + add0(1)
-  add1(1) := add0(2) + mul(6)
+  add1(1) := add0(2) + add0(3)
   add2(0) := add1(0) + add1(1)
   H := add2(0) >> 8
 }

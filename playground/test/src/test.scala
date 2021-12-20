@@ -16,7 +16,7 @@ import java.lang.Float.{floatToIntBits, intBitsToFloat}
 import java.lang.Double.{doubleToLongBits, longBitsToDouble}
 
 object Elaborate extends App {
-  (new chisel3.stage.ChiselStage).execute(args, Seq(chisel3.stage.ChiselGeneratorAnnotation(() => new time_decoder())))
+  (new chisel3.stage.ChiselStage).execute(args, Seq(chisel3.stage.ChiselGeneratorAnnotation(() => new filter_behavior())))
 }
 
 object TestSqrt extends ChiselUtestTester {
@@ -70,6 +70,33 @@ object TestTimeDecoder extends ChiselUtestTester {
 
             dut.clock.step()
           }
+        } join()
+      }
+    }
+  }
+}
+
+object TestFilterBehavior extends ChiselUtestTester {
+  val tests = Tests {
+    test("filter_behavior") {
+      testCircuit(
+        new filter_behavior,
+        Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)
+      ) { dut =>
+        fork {
+          dut.clock.step(10)
+        } fork {
+          var h = 0
+          for (i <- 0 until 7) {
+            val b = scala.util.Random.nextInt(128)
+            dut.B(i).poke(b.U)
+            val x = scala.util.Random.nextInt(128)
+            dut.X(i).poke(x.U)
+            h = h + b * x
+            println(b, x)
+          }
+          dut.clock.step(4)
+          dut.H.expect((h >> 8).U)
         } join()
       }
     }
