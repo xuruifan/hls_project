@@ -16,7 +16,7 @@ import java.lang.Float.{floatToIntBits, intBitsToFloat}
 import java.lang.Double.{doubleToLongBits, longBitsToDouble}
 
 object Elaborate extends App {
-  (new chisel3.stage.ChiselStage).execute(args, Seq(chisel3.stage.ChiselGeneratorAnnotation(() => new filter_behavior())))
+  (new chisel3.stage.ChiselStage).execute(args, Seq(chisel3.stage.ChiselGeneratorAnnotation(() => new micro_controller_interface())))
 }
 
 object TestSqrt extends ChiselUtestTester {
