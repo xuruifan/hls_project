@@ -9,10 +9,6 @@ class filter_behavior extends MultiIOModule {
 
   val PEbar = IO(Input(Bool()))
 
-  object State extends ChiselEnum {
-    val idle, s0, s1, s2, s3 = Value
-  }
-
   val mul = Reg(Vec(7, UInt(16.W)))
   val add0 = Reg(Vec(4, UInt(16.W)))
   val add1 = Reg(Vec(2, UInt(16.W)))
