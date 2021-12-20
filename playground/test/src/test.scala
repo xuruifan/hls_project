@@ -16,7 +16,7 @@ import java.lang.Float.{floatToIntBits, intBitsToFloat}
 import java.lang.Double.{doubleToLongBits, longBitsToDouble}
 
 object Elaborate extends App {
-  (new chisel3.stage.ChiselStage).execute(args, Seq(chisel3.stage.ChiselGeneratorAnnotation(() => new sqrt())))
+  (new chisel3.stage.ChiselStage).execute(args, Seq(chisel3.stage.ChiselGeneratorAnnotation(() => new time_decoder())))
 }
 
 object TestSqrt extends ChiselUtestTester {
@@ -35,6 +35,39 @@ object TestSqrt extends ChiselUtestTester {
             //            println(number, math.sqrt(number).toInt)
             dut.operand.poke(number.U)
             dut.result.expect(((1 << sqrt_number) - 1).U)
+            dut.clock.step()
+          }
+        } join()
+      }
+    }
+  }
+}
+
+object TestTimeDecoder extends ChiselUtestTester {
+  val tests = Tests {
+    test("time_decoder") {
+      testCircuit(
+        new time_decoder,
+        Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)
+      ) { dut =>
+        fork {
+          dut.clock.step(1)
+        } fork {
+          for (i <- 0 until 10) {
+            val number = scala.util.Random.nextInt(256)
+            val digit = Seq(number % 10, (number / 10) % 10, number / 100)
+            dut.data.poke(number.U)
+            //            dut.d00.expect(digit(2).U)
+            //            dut.d10.expect(digit(1).U)
+            //            dut.d01.expect(digit(0).U)
+            val hour = scala.util.Random.nextInt(24)
+            val dig_hour = Seq(number % 10, number / 10)
+            dut.hour.poke(hour.U)
+
+            val minute = scala.util.Random.nextInt(60)
+            val dig_minute = Seq(minute % 10, minute / 10)
+            dut.minute.poke(minute.U)
+
             dut.clock.step()
           }
         } join()
