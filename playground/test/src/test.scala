@@ -102,3 +102,31 @@ object TestFilterBehavior extends ChiselUtestTester {
     }
   }
 }
+
+object TestFilter extends ChiselUtestTester {
+  val tests = Tests {
+    test("filter") {
+      testCircuit(
+        new filter,
+        Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)
+      ) { dut =>
+        fork {
+          dut.clock.step(10)
+        } fork {
+          var h = 0
+          for (i <- 0 until 7) {
+            val b = scala.util.Random.nextInt(128)
+            dut.B(i).poke(b.U)
+            val x = scala.util.Random.nextInt(128)
+            dut.X(i).poke(x.U)
+            h = h + b * x
+            println(b, x)
+          }
+          dut.PEbar.poke(true.B)
+          dut.clock.step(6)
+          dut.H.expect((h >> 8).U)
+        } join()
+      }
+    }
+  }
+}
