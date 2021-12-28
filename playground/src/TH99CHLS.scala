@@ -25,6 +25,7 @@ class TH99CHLS extends MultiIOModule {
   // Modules
   val shift_register = Module(new shift_register())
   val filter = Module(new filter())
+  // val filter = Module(new filter_behavior)
   val sqrt = Module(new sqrt())
   val time_clock = Module(new time_clock())
   val time_decoder = Module(new time_decoder())
