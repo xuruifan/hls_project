@@ -1,5 +1,7 @@
 `timescale 10ps/1ps
 
+`define clock_period 'd1000
+
 `define B0_addr 16'd0
 `define B1_addr 16'd1
 `define B2_addr 16'd2
@@ -67,19 +69,65 @@ TH99CHLS top(
 )
 
 task init();
-    
+    PE_bar = 'b1;
+    in = 'bx;
+
+    ABUS_reg = 'b0;
+    DBUS_reg = 'b0;
+    BUS_en = 'b0;
+    CSbar = 'b1;
+    ALE = 'b0;
+    Rbar = 'b0;
+    Wbar = 'b0;
 endtask : init
 
+task reset();
+    clock = 'b1;
+    reset = 'b1;
+endtask : reset
+
 task micro_controller_write(input [16:0] addr, input [8:0] data);
+    @(negedge clock) begin
+        ABUS_reg <= addr[15:8];
+        DBUS_reg <= addr[7:0];
+        BUS_en <= 1'b1;
+        CS_bar <= 1'b0;
+    end
     @(negedge clock) ALE <= 1'b1;
     @(negedge clock) begin
         ALE <= 1'b0;
+        #1 
         DBUS_reg <= data;
     end
+
+    @(negedge clock) Wbar <= 1'b0;
+    @(negedge clock) Wbar <= 1'b1;
+    @(negedge clock) CSbar <= 1'b1;
+    @(negedge clock) BUS_en <= 1'b0;
+    
 endtask : micro_controller_write
+
+function [3:0] digiseg_decode( input [6:0] digiseg_code);
+    case(digiseg_code):
+        'd126:  digiseg_decode = 'd0;
+        'd24:   digiseg_decode = 'd1;
+        'd118:  digiseg_decode = 'd2;
+        'd124:  digiseg_decode = 'd3;
+        'd89:   digiseg_decode = 'd4;
+        'd109:  digiseg_decode = 'd5;
+        'd111:  digiseg_decode = 'd6;
+        'd56:   digiseg_decode = 'd7;
+        'd127:  digiseg_decode = 'd8;
+        'd125:  digiseg_decode = 'd9;
+    default : digiseg_decode = 'dx;
+    endcase
+endfunction : digiseg_decode
+
+always #`clock_period clk = ~clk;
 
 initial begin
     init();
+    reset();
     micro_controller_write(`B0_addr, 'd10);
     micro_controller_write(`B1_addr, 'd10);
     micro_controller_write(`B2_addr, 'd10);
