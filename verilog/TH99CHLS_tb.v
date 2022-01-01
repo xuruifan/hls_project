@@ -107,6 +107,36 @@ task micro_controller_write(input [16:0] addr, input [8:0] data);
     
 endtask : micro_controller_write
 
+task push_input(input [7:0] data);
+    @(posedge clock) begin
+        in <= data;
+        PE_bar <= 'b0;
+    end
+    @(posedge clock) begin
+        in <= 'bx;
+        PE_bar <= 'b1;
+    end
+    @(posedge clock);
+    @(posedge clock);
+    @(posedge clock);
+    @(posedge clock);
+    @(posedge clock);
+    @(posedge clock);
+endtask : push_input
+
+task suspend();
+    @(posedge clock) begin
+        in <= 'bz;
+    end
+    @(posedge clock);
+    @(posedge clock);
+    @(posedge clock);
+    @(posedge clock);
+    @(posedge clock);
+    @(posedge clock);
+    @(posedge clock);
+endtask : suspend
+
 function [3:0] digiseg_decode( input [6:0] digiseg_code);
     case(digiseg_code):
         'd126:  digiseg_decode = 'd0;
@@ -138,6 +168,21 @@ initial begin
     micro_controller_write(`operand_addr, 8'b11111111);
     micro_controller_write(`hour_addr, 'd23);
     micro_controller_write(`minute_addr, 'd33);
+
+    @(posedge clock);
+    @(posedge clock);
+
+    repeat(1000) begin
+        for (int i = 0; i < 256; i++) begin
+            push_input(i);
+        end
+    end
+
+    @(posedge clock) $finish;
+end
+
+always @(hour_0 or hour_1 or minute_0 or minute_1 or d00 or d01 or d10 or colon) begin
+    @(negedge cock) $display("%d%d%s%d%d %d%d%d", digiseg_decode(hour_1), digiseg_decode(hour_0), colon == 'b1 ? ":" : " ", digiseg_decode(minute_1), digiseg_decode(minute_0), digiseg_decode(d00), digiseg_decode(d10), digiseg_decode(d01));
 end
 
 endmodule
