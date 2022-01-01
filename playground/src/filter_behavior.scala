@@ -9,10 +9,11 @@ class filter_behavior extends MultiIOModule {
 
   val PEbar = IO(Input(Bool()))
 
-  val mul = Reg(Vec(7, UInt(16.W)))
-  val add0 = Reg(Vec(4, UInt(16.W)))
-  val add1 = Reg(Vec(2, UInt(16.W)))
-  val add2 = Reg(Vec(1, UInt(16.W)))
+  val mul = RegInit(VecInit(Seq.fill(7)(0.U(16.W))))
+  val add0 = RegInit(VecInit(Seq.fill(4)(0.U(16.W))))
+  val add1 = RegInit(VecInit(Seq.fill(2)(0.U(16.W))))
+  val add2 = RegInit(VecInit(Seq.fill(1)(0.U(16.W))))
+
 
   for (i <- 0 until 7) {
     mul(i) := B(i) * X(i)

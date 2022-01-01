@@ -23,6 +23,7 @@ class time_clock extends MultiIOModule {
     when(time_update) {
         hour_now := hour
         minute_now := minute
+        time_cnt := 0.U
     } otherwise {
         when(time_cnt === 599999.U) {
             time_cnt := 0.U
