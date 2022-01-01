@@ -12,8 +12,13 @@
 `define operand_addr 16'd7
 `define hour_addr 16'd8
 `define minute_addr 16'd9
+`define SDF_FILE "TH99CHLS.sdf"
 
 module TH99CHLS_tb ();
+
+initial begin 
+    $sdf_annotate(`SDF_FILE, u,,,"MAXIMUM"); 
+end
 
 reg clock;
 reg reset;
