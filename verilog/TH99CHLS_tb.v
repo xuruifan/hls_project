@@ -17,7 +17,7 @@
 module TH99CHLS_tb ();
 
 initial begin 
-    $sdf_annotate(`SDF_FILE, u,,,"MAXIMUM"); 
+   $sdf_annotate(`SDF_FILE, u,,,"MAXIMUM"); 
 end
 
 reg clock;
@@ -30,8 +30,8 @@ reg [7:0] DBUS_reg;
 reg BUS_en;
 wire [7:0] ABUS;
 wire [7:0] DBUS;
-assign ABUS = BUS_en ? ABUS_reg : `bz;
-assign DBUS = BUS_en ? DBUS_reg : `bz;
+assign ABUS = BUS_en ? ABUS_reg : 'bz;
+assign DBUS = BUS_en ? DBUS_reg : 'bz;
 
 reg CSbar;
 reg ALE;
@@ -71,10 +71,10 @@ TH99CHLS top(
     .d10(d10),
     .ap(ap),
     .colon(colon)
-)
+);
 
 task init();
-    PE_bar = 'b1;
+    PEbar = 'b1;
     in = 'bx;
 
     ABUS_reg = 'b0;
@@ -86,64 +86,51 @@ task init();
     Wbar = 'b0;
 endtask : init
 
-task reset();
+task global_reset();
     clock = 'b1;
     reset = 'b1;
-endtask : reset
+    @(negedge clock) begin
+        reset = 'b0;
+    end
+
+endtask : global_reset
 
 task micro_controller_write(input [16:0] addr, input [8:0] data);
     @(negedge clock) begin
         ABUS_reg <= addr[15:8];
         DBUS_reg <= addr[7:0];
         BUS_en <= 1'b1;
-        CS_bar <= 1'b0;
+        CSbar <= 1'b0;
+        ALE <= 1'b1;
     end
-    @(negedge clock) ALE <= 1'b1;
     @(negedge clock) begin
         ALE <= 1'b0;
-        #1 
+        #1
         DBUS_reg <= data;
     end
-
-    @(negedge clock) Wbar <= 1'b0;
-    @(negedge clock) Wbar <= 1'b1;
-    @(negedge clock) CSbar <= 1'b1;
-    @(negedge clock) BUS_en <= 1'b0;
+    @(negedge clock) begin
+        CSbar <= 1'b1;
+        BUS_en <= 1'b0;
+    end
     
 endtask : micro_controller_write
 
 task push_input(input [7:0] data);
     @(posedge clock) begin
         in <= data;
-        PE_bar <= 'b0;
+        PEbar <= 'b0;
     end
     @(posedge clock) begin
         in <= 'bx;
-        PE_bar <= 'b1;
+        PEbar <= 'b1;
     end
-    @(posedge clock);
-    @(posedge clock);
-    @(posedge clock);
     @(posedge clock);
     @(posedge clock);
     @(posedge clock);
 endtask : push_input
 
-task suspend();
-    @(posedge clock) begin
-        in <= 'bz;
-    end
-    @(posedge clock);
-    @(posedge clock);
-    @(posedge clock);
-    @(posedge clock);
-    @(posedge clock);
-    @(posedge clock);
-    @(posedge clock);
-endtask : suspend
-
 function [3:0] digiseg_decode( input [6:0] digiseg_code);
-    case(digiseg_code):
+    case(digiseg_code)
         'd126:  digiseg_decode = 'd0;
         'd24:   digiseg_decode = 'd1;
         'd118:  digiseg_decode = 'd2;
@@ -158,19 +145,19 @@ function [3:0] digiseg_decode( input [6:0] digiseg_code);
     endcase
 endfunction : digiseg_decode
 
-always #`clock_period clk = ~clk;
+always #10 clock = ~clock;
 
 initial begin
     init();
-    reset();
-    micro_controller_write(`B0_addr, 'd10);
-    micro_controller_write(`B1_addr, 'd10);
-    micro_controller_write(`B2_addr, 'd10);
-    micro_controller_write(`B3_addr, 'd10);
-    micro_controller_write(`B4_addr, 'd10);
-    micro_controller_write(`B5_addr, 'd10);
-    micro_controller_write(`B6_addr, 'd10);
-    micro_controller_write(`operand_addr, 8'b11111111);
+    global_reset();
+    micro_controller_write(`B0_addr, 'd13);
+    micro_controller_write(`B1_addr, 'd89);
+    micro_controller_write(`B2_addr, 'd73);
+    micro_controller_write(`B3_addr, 'd59);
+    micro_controller_write(`B4_addr, 'd23);
+    micro_controller_write(`B5_addr, 'd67);
+    micro_controller_write(`B6_addr, 'd1);
+    micro_controller_write(`operand_addr, 8'b11101101);
     micro_controller_write(`hour_addr, 'd23);
     micro_controller_write(`minute_addr, 'd33);
 
@@ -182,12 +169,11 @@ initial begin
             push_input(i);
         end
     end
-
     @(posedge clock) $finish;
 end
 
 always @(hour_0 or hour_1 or minute_0 or minute_1 or d00 or d01 or d10 or colon) begin
-    @(negedge cock) $display("%d%d%s%d%d %d%d%d", digiseg_decode(hour_1), digiseg_decode(hour_0), colon == 'b1 ? ":" : " ", digiseg_decode(minute_1), digiseg_decode(minute_0), digiseg_decode(d00), digiseg_decode(d10), digiseg_decode(d01));
+    @(negedge clock) $display("%d%d%s%d%d %d%d%d", digiseg_decode(hour_1), digiseg_decode(hour_0), colon == 'b1 ? ":" : " ", digiseg_decode(minute_1), digiseg_decode(minute_0), digiseg_decode(d00), digiseg_decode(d10), digiseg_decode(d01));
 end
 
 endmodule

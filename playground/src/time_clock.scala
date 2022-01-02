@@ -25,7 +25,7 @@ class time_clock extends MultiIOModule {
         minute_now := minute
         time_cnt := 0.U
     } otherwise {
-        when(time_cnt === 599999.U) {
+        when(time_cnt === 5999.U) {
             time_cnt := 0.U
             when(minute_now === 59.U) {
                 minute_now := 0.U
@@ -42,9 +42,9 @@ class time_clock extends MultiIOModule {
         }
     }
 
-    when(colon_cnt === 9999.U) {
+    when(colon_cnt === 9.U) {
         colon_cnt := 0.U
-        colon_now := -colon_now
+        colon_now := ~colon_now
     } otherwise {
         colon_cnt := colon_cnt + 1.U
     }
