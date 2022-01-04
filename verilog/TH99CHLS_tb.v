@@ -1,4 +1,4 @@
-`timescale 10ps/1ps
+`timescale 1ns/1ps
 
 `define clock_period 'd1000
 
@@ -17,7 +17,7 @@
 module TH99CHLS_tb ();
 
 initial begin 
-   $sdf_annotate(`SDF_FILE, u,,,"MAXIMUM"); 
+   $sdf_annotate(`SDF_FILE, top,,,"MAXIMUM"); 
 end
 
 reg clock;
